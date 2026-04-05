@@ -66,9 +66,8 @@ export default function Home() {
 
   const [cases, setCases] = useState<SavedCase[]>([]);
   const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
-
-  useEffect(() => {
-  async function loadCases() {
+useEffect(() => {
+  const loadCases = async () => {
     const { data, error } = await supabase
       .from("cases")
       .select("*")
@@ -96,10 +95,12 @@ export default function Home() {
     }));
 
     setCases(mapped);
-  }
+  };
 
   loadCases();
 }, []);
+  
+
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
