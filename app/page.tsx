@@ -1,7 +1,12 @@
 "use client";
 
+import { createClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 type SavedCase = {
   id: number;
   customerName: string;
