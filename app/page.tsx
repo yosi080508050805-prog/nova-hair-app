@@ -23,7 +23,6 @@ type SavedCase = {
   afterPhotoUrl?: string;
 };
 
-const STORAGE_KEY = "nova-saved-cases";
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -65,7 +64,8 @@ export default function Home() {
   const [memo, setMemo] = useState("");
 
   const [cases, setCases] = useState<SavedCase[]>([]);
-  const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
+const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
+
 useEffect(() => {
   const loadCases = async () => {
     const { data, error } = await supabase
@@ -99,21 +99,15 @@ useEffect(() => {
 
   loadCases();
 }, []);
-  
 
+const filteredCases = useMemo(() => {
+  const keyword = searchName.trim().toLowerCase();
+  if (!keyword) return cases;
 
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
-  }, [cases]);
-
-  const filteredCases = useMemo(() => {
-    const keyword = searchName.trim().toLowerCase();
-    if (!keyword) return cases;
-
-    return cases.filter((item) =>
-      item.customerName.toLowerCase().includes(keyword)
-    );
-  }, [cases, searchName]);
+  return cases.filter((item) =>
+    item.customerName.toLowerCase().includes(keyword)
+  );
+}, [cases, searchName]);
 
   const pageStyle = {
     minHeight: "100vh",
@@ -412,28 +406,66 @@ useEffect(() => {
       return;
     }
   }
-
-  function saveCase() {
-    if (!customerName.trim()) {
-      alert("お客様名を入力してください");
-      return;
-    }
-
-    if (!rootResult && !tipResult) {
-      alert("先に薬剤選定してください");
-      return;
-    }
-
-    const titleParts = [
-      customerName || "お客様名未入力",
-      serviceArea || "施術部位未選択",
-      hardness || "硬さ未選択",
-      wave || "うねり未選択",
-    ];
-
-    NEXT_PUBLIC_SUPABASE_URL=https://fnlyhxxgktyfkmvwokfm.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_zpyAV7IENVKzdiQWaGhSOQ_8es1kxVq
+async function saveCase() {
+  if (!customerName.trim()) {
+    alert("お客様名を入力してください");
+    return;
   }
+
+  if (!rootResult && !tipResult) {
+    alert("先に薬剤選定してください");
+    return;
+  }
+
+  const titleParts = [
+    customerName || "お客様名未入力",
+    serviceArea || "施術部位未選択",
+    hardness || "硬さ未選択",
+    wave || "うねり未選択",
+  ];
+
+  const newCase: SavedCase = {
+    id: Date.now(),
+    customerName: customerName.trim(),
+    title: titleParts.join(" / "),
+    date: new Date().toLocaleDateString(),
+    serviceArea,
+    root: rootResult || "未選定",
+    tip: tipResult || "未選定",
+    treatment: treatmentResult || "未判定",
+    warning,
+    memo: memo || "メモなし",
+    beforePhotoUrl,
+    tipPhotoUrl,
+    afterPhotoUrl,
+  };
+
+  const { error } = await supabase.from("cases").insert([
+    {
+      customer_name: newCase.customerName,
+      service_area: newCase.serviceArea,
+      root_result: newCase.root,
+      tip_result: newCase.tip,
+      treatment_result: newCase.treatment,
+      warning: newCase.warning,
+      memo: newCase.memo,
+      before_photo_url: newCase.beforePhotoUrl || "",
+      tip_photo_url: newCase.tipPhotoUrl || "",
+      after_photo_url: newCase.afterPhotoUrl || "",
+    },
+  ]);
+
+  if (error) {
+    alert("クラウド保存に失敗しました");
+    console.error(error);
+    return;
+  }
+
+  const updatedCases = [newCase, ...cases];
+  setCases(updatedCases);
+  setSelectedCase(newCase);
+  alert("症例をクラウド保存しました");
+}
 
   function deleteCase(id: number) {
     const updated = cases.filter((item) => item.id !== id);
