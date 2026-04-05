@@ -408,26 +408,8 @@ export default function Home() {
       wave || "うねり未選択",
     ];
 
-    const newCase: SavedCase = {
-      id: Date.now(),
-      customerName: customerName.trim(),
-      title: titleParts.join(" / "),
-      date: new Date().toLocaleDateString(),
-      serviceArea,
-      root: rootResult || "未選定",
-      tip: tipResult || "未選定",
-      treatment: treatmentResult || "未判定",
-      warning,
-      memo: memo || "メモなし",
-      beforePhotoUrl,
-      tipPhotoUrl,
-      afterPhotoUrl,
-    };
-
-    const updatedCases = [newCase, ...cases];
-    setCases(updatedCases);
-    setSelectedCase(newCase);
-    alert("症例を保存しました");
+    NEXT_PUBLIC_SUPABASE_URL=https://fnlyhxxgktyfkmvwokfm.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_zpyAV7IENVKzdiQWaGhSOQ_8es1kxVq
   }
 
   function deleteCase(id: number) {
