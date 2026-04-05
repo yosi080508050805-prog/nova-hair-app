@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type SavedCase = {
   id: number;
+  customerName: string;
   title: string;
   date: string;
   serviceArea: string;
@@ -25,6 +26,9 @@ export default function Home() {
   const [loginPassword, setLoginPassword] = useState("");
   const [loginError, setLoginError] = useState("");
 
+  const [customerName, setCustomerName] = useState("");
+  const [searchName, setSearchName] = useState("");
+
   const [serviceArea, setServiceArea] = useState("");
 
   const [hardness, setHardness] = useState("");
@@ -35,9 +39,11 @@ export default function Home() {
   const [straightHistory, setStraightHistory] = useState(false);
   const [permHistory, setPermHistory] = useState(false);
 
+  const [tipHistory, setTipHistory] = useState("");
   const [tipState, setTipState] = useState("");
   const [tipHardness, setTipHardness] = useState("");
   const [tipReason, setTipReason] = useState("");
+  const [tipFinishGoal, setTipFinishGoal] = useState("");
 
   const [rootResult, setRootResult] = useState("");
   const [tipResult, setTipResult] = useState("");
@@ -71,6 +77,15 @@ export default function Home() {
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
   }, [cases]);
+
+  const filteredCases = useMemo(() => {
+    const keyword = searchName.trim().toLowerCase();
+    if (!keyword) return cases;
+
+    return cases.filter((item) =>
+      item.customerName.toLowerCase().includes(keyword)
+    );
+  }, [cases, searchName]);
 
   const pageStyle = {
     minHeight: "100vh",
@@ -172,7 +187,6 @@ export default function Home() {
       setLoginError("");
       return;
     }
-
     setLoginError("IDまたはパスワードが違います");
   }
 
@@ -194,15 +208,9 @@ export default function Home() {
 
     const dataUrl = await fileToDataUrl(file);
 
-    if (type === "before") {
-      setBeforePhotoUrl(dataUrl);
-    }
-    if (type === "tip") {
-      setTipPhotoUrl(dataUrl);
-    }
-    if (type === "after") {
-      setAfterPhotoUrl(dataUrl);
-    }
+    if (type === "before") setBeforePhotoUrl(dataUrl);
+    if (type === "tip") setTipPhotoUrl(dataUrl);
+    if (type === "after") setAfterPhotoUrl(dataUrl);
   }
 
   function getRootFormula() {
@@ -241,12 +249,26 @@ export default function Home() {
   }
 
   function getTipFormula() {
-    if (!tipState) return "毛先状態を選択してください";
+    if (!tipHistory) return "毛先履歴を選択してください";
 
-    if (tipState === "縮毛矯正が効いている") return "S.M 4:1";
-    if (tipState === "縮毛矯正が効いているが癖残り") return "S.M.H 3:1 + 10%";
+    if (tipHistory === "縮毛履歴") {
+      if (tipFinishGoal === "曲げたい") {
+        return "やり直し選定（曲げ対応）";
+      }
+
+      if (tipState === "癖残り") {
+        return "S.M.H 3:1 + 10%";
+      }
+
+      if (tipState === "ビビり気味") {
+        return "S単品";
+      }
+
+      return "S.M 4:1";
+    }
+
+    if (tipHistory === "ハイダメージ") return "S単品";
     if (tipState === "ビビり気味") return "S単品";
-    if (tipState === "ハイダメージ") return "S単品";
 
     if (tipState === "パサつき強い") {
       if (tipHardness === "硬い" && tipReason === "癖由来") {
@@ -255,13 +277,22 @@ export default function Home() {
       return "1:1";
     }
 
+    if (tipHistory === "カラー＋パーマ") return "1:1（慎重施術）";
+    if (tipHistory === "カラー履歴") return "1:1";
+    if (tipHistory === "パーマ履歴") return "1:1";
+    if (tipHistory === "バージン毛") return "根元選定に準ずる";
+
     return "毛先条件に合う選定がまだありません";
   }
 
   function getTreatmentGuide() {
     let text = "キトサン：必須";
 
-    if (serviceArea === "根元＋毛先" || serviceArea === "毛先のみ補正") {
+    if (
+      serviceArea === "根元＋毛先" ||
+      serviceArea === "毛先のみ補正" ||
+      serviceArea === "全体（履歴なし）"
+    ) {
       text += " / アンジー（CMC）：必須 / ネクター（セラック）：必須";
     }
 
@@ -307,8 +338,19 @@ export default function Home() {
       setTipResult(getTipFormula());
       setTreatmentResult(getTreatmentGuide());
 
-      if (straightHistory || permHistory) {
+      if (straightHistory || permHistory || tipHistory === "縮毛履歴") {
         setWarning("既施術部補正：過反応注意。毛先の状態確認必須");
+      }
+      return;
+    }
+
+    if (serviceArea === "全体（履歴なし）") {
+      setRootResult(getRootFormula());
+      setTipResult(getTipFormula());
+      setTreatmentResult(getTreatmentGuide());
+
+      if (tipHistory === "縮毛履歴" && tipFinishGoal === "曲げたい") {
+        setWarning("縮毛履歴毛先を曲げる場合：やり直し選定で対応");
       }
     }
   }
@@ -344,20 +386,26 @@ export default function Home() {
   }
 
   function saveCase() {
+    if (!customerName.trim()) {
+      alert("お客様名を入力してください");
+      return;
+    }
+
     if (!rootResult && !tipResult) {
       alert("先に薬剤選定してください");
       return;
     }
 
     const titleParts = [
+      customerName || "お客様名未入力",
       serviceArea || "施術部位未選択",
       hardness || "硬さ未選択",
       wave || "うねり未選択",
-      colorHistory ? "カラー履歴あり" : "カラー履歴なし",
     ];
 
     const newCase: SavedCase = {
       id: Date.now(),
+      customerName: customerName.trim(),
       title: titleParts.join(" / "),
       date: new Date().toLocaleDateString(),
       serviceArea,
@@ -531,6 +579,28 @@ export default function Home() {
         </div>
 
         <section style={cardStyle}>
+          <h2 style={sectionTitleStyle}>お客様情報</h2>
+
+          <div>
+            <p style={smallLabelStyle}>お客様名</p>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) => setCustomerName(e.target.value)}
+              placeholder="例: 山田太郎"
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "12px",
+                border: "1px solid #d1d5db",
+                fontSize: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+        </section>
+
+        <section style={cardStyle}>
           <h2 style={sectionTitleStyle}>写真</h2>
 
           <div style={{ marginBottom: "18px" }}>
@@ -598,6 +668,12 @@ export default function Home() {
               onClick={() => setServiceArea("毛先のみ補正")}
             >
               毛先のみ補正
+            </button>
+            <button
+              style={buttonStyle(serviceArea === "全体（履歴なし）")}
+              onClick={() => setServiceArea("全体（履歴なし）")}
+            >
+              全体（履歴なし）
             </button>
           </div>
         </section>
@@ -697,24 +773,88 @@ export default function Home() {
           </div>
         </section>
 
-        {(serviceArea === "根元＋毛先" || serviceArea === "毛先のみ補正") && (
+        {(serviceArea === "根元＋毛先" ||
+          serviceArea === "毛先のみ補正" ||
+          serviceArea === "全体（履歴なし）") && (
           <section style={cardStyle}>
             <h2 style={sectionTitleStyle}>毛先の入力</h2>
+
+            <div style={{ marginBottom: "18px" }}>
+              <p style={smallLabelStyle}>毛先履歴</p>
+              <div style={rowStyle}>
+                <button
+                  style={buttonStyle(tipHistory === "バージン毛")}
+                  onClick={() => setTipHistory("バージン毛")}
+                >
+                  バージン毛
+                </button>
+                <button
+                  style={buttonStyle(tipHistory === "カラー履歴")}
+                  onClick={() => setTipHistory("カラー履歴")}
+                >
+                  カラー履歴
+                </button>
+                <button
+                  style={buttonStyle(tipHistory === "パーマ履歴")}
+                  onClick={() => setTipHistory("パーマ履歴")}
+                >
+                  パーマ履歴
+                </button>
+                <button
+                  style={buttonStyle(tipHistory === "縮毛履歴")}
+                  onClick={() => setTipHistory("縮毛履歴")}
+                >
+                  縮毛履歴
+                </button>
+                <button
+                  style={buttonStyle(tipHistory === "カラー＋パーマ")}
+                  onClick={() => setTipHistory("カラー＋パーマ")}
+                >
+                  カラー＋パーマ
+                </button>
+                <button
+                  style={buttonStyle(tipHistory === "ハイダメージ")}
+                  onClick={() => setTipHistory("ハイダメージ")}
+                >
+                  ハイダメージ
+                </button>
+              </div>
+            </div>
+
+            {tipHistory === "縮毛履歴" && (
+              <div style={{ marginBottom: "18px" }}>
+                <p style={smallLabelStyle}>仕上がり希望</p>
+                <div style={rowStyle}>
+                  <button
+                    style={buttonStyle(tipFinishGoal === "曲げたい")}
+                    onClick={() => setTipFinishGoal("曲げたい")}
+                  >
+                    曲げたい
+                  </button>
+                  <button
+                    style={buttonStyle(tipFinishGoal === "伸ばすだけ")}
+                    onClick={() => setTipFinishGoal("伸ばすだけ")}
+                  >
+                    伸ばすだけ
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div style={{ marginBottom: "18px" }}>
               <p style={smallLabelStyle}>毛先状態</p>
               <div style={rowStyle}>
                 <button
-                  style={buttonStyle(tipState === "縮毛矯正が効いている")}
-                  onClick={() => setTipState("縮毛矯正が効いている")}
+                  style={buttonStyle(tipState === "普通")}
+                  onClick={() => setTipState("普通")}
                 >
-                  縮毛効いてる
+                  普通
                 </button>
                 <button
-                  style={buttonStyle(tipState === "縮毛矯正が効いているが癖残り")}
-                  onClick={() => setTipState("縮毛矯正が効いているが癖残り")}
+                  style={buttonStyle(tipState === "癖残り")}
+                  onClick={() => setTipState("癖残り")}
                 >
-                  縮毛効いてる＋癖残り
+                  癖残り
                 </button>
                 <button
                   style={buttonStyle(tipState === "ビビり気味")}
@@ -727,12 +867,6 @@ export default function Home() {
                   onClick={() => setTipState("パサつき強い")}
                 >
                   パサつき強い
-                </button>
-                <button
-                  style={buttonStyle(tipState === "ハイダメージ")}
-                  onClick={() => setTipState("ハイダメージ")}
-                >
-                  ハイダメージ
                 </button>
               </div>
             </div>
@@ -953,24 +1087,44 @@ export default function Home() {
         </section>
 
         <section style={cardStyle}>
-          <h2 style={sectionTitleStyle}>症例比較</h2>
-          <p style={{ ...smallLabelStyle, marginBottom: "12px" }}>
-            保存した症例をタップして比較できます
-          </p>
+          <h2 style={sectionTitleStyle}>症例検索・比較</h2>
 
-          {cases.length === 0 && (
-            <p style={{ color: "#6b7280" }}>まだ保存された症例はありません</p>
+          <div style={{ marginBottom: "14px" }}>
+            <p style={smallLabelStyle}>お客様名で検索</p>
+            <input
+              type="text"
+              value={searchName}
+              onChange={(e) => setSearchName(e.target.value)}
+              placeholder="例: 山田"
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "12px",
+                border: "1px solid #d1d5db",
+                fontSize: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
+
+          {filteredCases.length === 0 && (
+            <p style={{ color: "#6b7280" }}>該当する症例はありません</p>
           )}
 
-          {cases.map((item) => (
+          {filteredCases.map((item) => (
             <div key={item.id} style={compareItemStyle}>
               <div
                 onClick={() => setSelectedCase(item)}
                 style={{ cursor: "pointer" }}
               >
-                <p style={{ fontWeight: 700, marginBottom: "4px" }}>{item.title}</p>
+                <p style={{ fontWeight: 700, marginBottom: "4px" }}>
+                  {item.customerName}
+                </p>
                 <p style={{ fontSize: "13px", color: "#6b7280", marginBottom: "6px" }}>
                   {item.date}
+                </p>
+                <p style={{ fontSize: "14px", color: "#374151", marginBottom: "4px" }}>
+                  {item.title}
                 </p>
                 <p style={{ fontSize: "14px", color: "#374151" }}>
                   根元: {item.root}
@@ -1006,7 +1160,7 @@ export default function Home() {
               }}
             >
               <p style={{ fontWeight: 700, marginBottom: "8px" }}>
-                参考症例: {selectedCase.title}
+                お客様名: {selectedCase.customerName}
               </p>
               <p style={{ marginBottom: "6px" }}>施術部位: {selectedCase.serviceArea}</p>
               <p style={{ marginBottom: "6px" }}>根元: {selectedCase.root}</p>
