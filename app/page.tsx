@@ -68,16 +68,38 @@ export default function Home() {
   const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
 
   useEffect(() => {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) {
-      try {
-        const parsed = JSON.parse(raw) as SavedCase[];
-        setCases(parsed);
-      } catch {
-        console.error("保存データの読み込みに失敗しました");
-      }
+  async function loadCases() {
+    const { data, error } = await supabase
+      .from("cases")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("読み込み失敗", error);
+      return;
     }
-  }, []);
+
+    const mapped = data.map((item: any) => ({
+      id: item.id,
+      customerName: item.customer_name,
+      title: item.customer_name,
+      date: new Date(item.created_at).toLocaleDateString(),
+      serviceArea: item.service_area,
+      root: item.root_result,
+      tip: item.tip_result,
+      treatment: item.treatment_result,
+      warning: item.warning,
+      memo: item.memo,
+      beforePhotoUrl: item.before_photo_url,
+      tipPhotoUrl: item.tip_photo_url,
+      afterPhotoUrl: item.after_photo_url,
+    }));
+
+    setCases(mapped);
+  }
+
+  loadCases();
+}, []);
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(cases));
