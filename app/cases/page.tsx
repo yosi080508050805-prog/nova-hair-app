@@ -1,45 +1,23 @@
-const saveCase = async () => {
-  try {
-    const payload = {
-      customer_name: customerName,
-      service_area: serviceArea,
-      root_result: root,
-      tip_result: tip,
-      treatment_result: treatment,
-      warning,
-      memo,
-      before_photo_url: beforePhotoUrl,
-      tip_photo_url: tipPhotoUrl,
-      after_photo_url: afterPhotoUrl,
-    };
+"use client";
 
-    let error;
+import Link from "next/link";
 
-    if (editingId) {
-      const { error: updateError } = await supabase
-        .from("cases")
-        .update(payload)
-        .eq("id", editingId);
+export default function CasesPage() {
+  return (
+    <main
+      style={{
+        maxWidth: "900px",
+        margin: "0 auto",
+        padding: "20px",
+      }}
+    >
+      <h1>症例一覧</h1>
 
-      error = updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from("cases")
-        .insert([payload]);
+      <Link href="/">← トップへ戻る</Link>
 
-      error = insertError;
-    }
-
-    if (error) {
-      console.error(error);
-      alert("クラウド保存に失敗しました");
-      return;
-    }
-
-    alert("症例をクラウド保存しました");
-
-  } catch (e) {
-    console.error(e);
-    alert("クラウド保存に失敗しました");
-  }
-};
+      <div style={{ marginTop: "20px" }}>
+        症例ページ準備中
+      </div>
+    </main>
+  );
+}
