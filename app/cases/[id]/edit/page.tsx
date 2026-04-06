@@ -119,9 +119,9 @@ export default function EditCasePage() {
       return;
     }
 
-    alert("更新完了");
-    window.location.href = `/cases/${id}`;
-  };
+    localStorage.setItem("edit_case", JSON.stringify(payload));
+alert("更新完了");
+window.location.href = "/";
 
   const pageStyle: React.CSSProperties = {
     minHeight: "100vh",
