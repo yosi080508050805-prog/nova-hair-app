@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -33,6 +34,8 @@ type CustomerGroup = {
 };
 
 export default function CustomersPage() {
+  const router = useRouter();
+
   const [cases, setCases] = useState<CaseItem[]>([]);
   const [search, setSearch] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerGroup | null>(
@@ -307,16 +310,41 @@ export default function CustomersPage() {
                   key={item.id}
                   style={{
                     border: "1px solid #e5e7eb",
-                    borderRadius: "14px",
-                    padding: "14px",
-                    backgroundColor: "#fff",
+                    borderRadius: "12px",
+                    padding: "16px",
+                    background: "white",
                   }}
                 >
-                  <p style={{ color: "#6b7280", marginBottom: "8px" }}>
-                    {item.created_at
-                      ? new Date(item.created_at).toLocaleString()
-                      : "-"}
-                  </p>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      gap: "12px",
+                      marginBottom: "12px",
+                      flexWrap: "wrap",
+                    }}
+                  >
+                    <div style={{ fontWeight: 600 }}>
+                      {new Date(item.created_at).toLocaleString()}
+                    </div>
+
+                    <button
+                      onClick={() => router.push(`/cases?edit=${item.id}`)}
+                      style={{
+                        background: "#2563eb",
+                        color: "white",
+                        border: "none",
+                        padding: "8px 14px",
+                        borderRadius: "8px",
+                        cursor: "pointer",
+                        fontWeight: 700,
+                      }}
+                    >
+                      編集
+                    </button>
+                  </div>
+
                   <p style={{ marginBottom: "4px" }}>
                     施術部位: {item.service_area || "-"}
                   </p>
@@ -350,6 +378,7 @@ export default function CustomersPage() {
                     style={{
                       display: "flex",
                       gap: "12px",
+                      marginTop: "12px",
                       flexWrap: "wrap",
                     }}
                   >
