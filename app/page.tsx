@@ -1,22 +1,9 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
+import { useState } from "react";
 
 export default function Home() {
-  const searchParams = useSearchParams();
-  const editId = searchParams.get("edit");
-
-  const [editingId, setEditingId] = useState<number | null>(null);
-
   const [customerName, setCustomerName] = useState("");
   const [serviceArea, setServiceArea] = useState("");
   const [root, setRoot] = useState("");
@@ -25,131 +12,269 @@ export default function Home() {
   const [warning, setWarning] = useState("");
   const [memo, setMemo] = useState("");
 
-  const [beforePhotoUrl, setBeforePhotoUrl] = useState("");
-  const [tipPhotoUrl, setTipPhotoUrl] = useState("");
-  const [afterPhotoUrl, setAfterPhotoUrl] = useState("");
-
-  useEffect(() => {
-    const loadEditCase = async () => {
-      if (!editId) return;
-
-      const { data } = await supabase
-        .from("cases")
-        .select("*")
-        .eq("id", editId)
-        .single();
-
-      if (!data) return;
-
-      setEditingId(data.id);
-      setCustomerName(data.customer_name || "");
-      setServiceArea(data.service_area || "");
-      setRoot(data.root_result || "");
-      setTip(data.tip_result || "");
-      setTreatment(data.treatment_result || "");
-      setWarning(data.warning || "");
-      setMemo(data.memo || "");
-      setBeforePhotoUrl(data.before_photo_url || "");
-      setTipPhotoUrl(data.tip_photo_url || "");
-      setAfterPhotoUrl(data.after_photo_url || "");
-    };
-
-    loadEditCase();
-  }, [editId]);
-
-  const saveCase = async () => {
-    const payload = {
-      customer_name: customerName,
-      service_area: serviceArea,
-      root_result: root,
-      tip_result: tip,
-      treatment_result: treatment,
-      warning,
-      memo,
-      before_photo_url: beforePhotoUrl,
-      tip_photo_url: tipPhotoUrl,
-      after_photo_url: afterPhotoUrl,
-    };
-
-    let error;
-
-    if (editingId) {
-      const { error: updateError } = await supabase
-        .from("cases")
-        .update(payload)
-        .eq("id", editingId);
-
-      error = updateError;
-    } else {
-      const { error: insertError } = await supabase
-        .from("cases")
-        .insert([payload]);
-
-      error = insertError;
-    }
-
-    if (error) {
-      alert("保存失敗");
-      return;
-    }
-
-    alert("保存完了");
-    window.location.href = "/cases";
-  };
-
   return (
-    <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
-      <h1>nova</h1>
-      <p>MEN'S STRAIGHT PERM</p>
+    <main
+      style={{
+        maxWidth: "760px",
+        margin: "0 auto",
+        padding: "20px 16px 60px",
+        minHeight: "100vh",
+        background: "#f5f7fb",
+      }}
+    >
+      <h1
+        style={{
+          fontSize: "28px",
+          fontWeight: 700,
+          marginBottom: "8px",
+          color: "#111827",
+        }}
+      >
+        nova
+      </h1>
 
-      <div style={{ marginBottom: 20 }}>
-        <Link href="/cases">症例一覧</Link>
+      <p
+        style={{
+          color: "#6b7280",
+          letterSpacing: "0.08em",
+          marginBottom: "8px",
+        }}
+      >
+        MEN&apos;S STRAIGHT PERM
+      </p>
+
+      <p
+        style={{
+          fontSize: "20px",
+          fontWeight: 700,
+          color: "#111827",
+          marginBottom: "8px",
+        }}
+      >
+        薬剤選定アプリ
+      </p>
+
+      <div
+        style={{
+          display: "flex",
+          gap: "12px",
+          marginTop: "12px",
+          marginBottom: "20px",
+          flexWrap: "wrap",
+        }}
+      >
+        <Link
+          href="/cases"
+          style={{
+            background: "#2563eb",
+            color: "white",
+            padding: "10px 16px",
+            borderRadius: "10px",
+            textDecoration: "none",
+            fontWeight: 600,
+            display: "inline-block",
+          }}
+        >
+          症例一覧
+        </Link>
+
+        <Link
+          href="/customers"
+          style={{
+            background: "#111827",
+            color: "white",
+            padding: "10px 16px",
+            borderRadius: "10px",
+            textDecoration: "none",
+            fontWeight: 600,
+            display: "inline-block",
+          }}
+        >
+          顧客履歴
+        </Link>
       </div>
 
-      <input
-        placeholder="お客様名"
-        value={customerName}
-        onChange={(e) => setCustomerName(e.target.value)}
+      <hr
+        style={{
+          marginBottom: "20px",
+          border: "none",
+          borderTop: "1px solid #e5e7eb",
+        }}
       />
 
-      <input
-        placeholder="施術部位"
-        value={serviceArea}
-        onChange={(e) => setServiceArea(e.target.value)}
-      />
+      <section
+        style={{
+          background: "white",
+          borderRadius: "16px",
+          padding: "20px",
+          marginBottom: "20px",
+          border: "1px solid #e5e7eb",
+        }}
+      >
+        <h2
+          style={{
+            fontSize: "18px",
+            fontWeight: 700,
+            marginBottom: "12px",
+          }}
+        >
+          お客様情報
+        </h2>
 
-      <input
-        placeholder="根元"
-        value={root}
-        onChange={(e) => setRoot(e.target.value)}
-      />
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          お客様名
+        </p>
+        <input
+          type="text"
+          value={customerName}
+          onChange={(e) => setCustomerName(e.target.value)}
+          placeholder="例: 山田太郎"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            marginBottom: "12px",
+          }}
+        />
 
-      <input
-        placeholder="毛先"
-        value={tip}
-        onChange={(e) => setTip(e.target.value)}
-      />
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          施術部位
+        </p>
+        <input
+          type="text"
+          value={serviceArea}
+          onChange={(e) => setServiceArea(e.target.value)}
+          placeholder="例: 全体"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            marginBottom: "12px",
+          }}
+        />
 
-      <textarea
-        placeholder="中間処理"
-        value={treatment}
-        onChange={(e) => setTreatment(e.target.value)}
-      />
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          根元
+        </p>
+        <input
+          type="text"
+          value={root}
+          onChange={(e) => setRoot(e.target.value)}
+          placeholder="例: M.H（1:1）"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            marginBottom: "12px",
+          }}
+        />
 
-      <textarea
-        placeholder="注意"
-        value={warning}
-        onChange={(e) => setWarning(e.target.value)}
-      />
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          毛先
+        </p>
+        <input
+          type="text"
+          value={tip}
+          onChange={(e) => setTip(e.target.value)}
+          placeholder="例: 根元選定に準ずる"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            marginBottom: "12px",
+          }}
+        />
 
-      <textarea
-        placeholder="メモ"
-        value={memo}
-        onChange={(e) => setMemo(e.target.value)}
-      />
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          中間処理
+        </p>
+        <textarea
+          value={treatment}
+          onChange={(e) => setTreatment(e.target.value)}
+          placeholder="例: キトサン / CMC / ネクター"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            minHeight: "90px",
+            marginBottom: "12px",
+          }}
+        />
 
-      <button onClick={saveCase}>
-        {editingId ? "更新する" : "症例保存"}
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          注意
+        </p>
+        <textarea
+          value={warning}
+          onChange={(e) => setWarning(e.target.value)}
+          placeholder="例: 縮毛履歴あり"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            minHeight: "90px",
+            marginBottom: "12px",
+          }}
+        />
+
+        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
+          メモ
+        </p>
+        <textarea
+          value={memo}
+          onChange={(e) => setMemo(e.target.value)}
+          placeholder="例: 次回は弱めスタート"
+          style={{
+            width: "100%",
+            padding: "12px",
+            borderRadius: "12px",
+            border: "1px solid #d1d5db",
+            fontSize: "16px",
+            boxSizing: "border-box",
+            background: "white",
+            minHeight: "90px",
+          }}
+        />
+      </section>
+
+      <button
+        type="button"
+        style={{
+          width: "100%",
+          padding: "16px",
+          background: "#4caf50",
+          color: "white",
+          borderRadius: "12px",
+          fontWeight: 700,
+          border: "none",
+          cursor: "pointer",
+        }}
+      >
+        症例を保存する
       </button>
     </main>
   );
