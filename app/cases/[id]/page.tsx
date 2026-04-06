@@ -51,7 +51,9 @@ export default function CaseDetailPage() {
       setLoading(false);
     };
 
-    if (id) loadCase();
+    if (id) {
+      loadCase();
+    }
   }, [id]);
 
   const pageStyle: React.CSSProperties = {
@@ -127,22 +129,50 @@ export default function CaseDetailPage() {
 
         {!loading && item && (
           <section style={cardStyle}>
-            <h2
+            <div
               style={{
-                fontSize: "26px",
-                fontWeight: 700,
-                marginBottom: "12px",
+                display: "flex",
+                justifyContent: "space-between",
+                gap: "12px",
+                flexWrap: "wrap",
+                alignItems: "center",
+                marginBottom: "18px",
               }}
             >
-              {item.customer_name || "名前未登録"}
-            </h2>
+              <div>
+                <h2
+                  style={{
+                    fontSize: "26px",
+                    fontWeight: 700,
+                    marginBottom: "6px",
+                  }}
+                >
+                  {item.customer_name || "名前未登録"}
+                </h2>
 
-            <p style={{ color: "#6b7280", marginBottom: "8px" }}>
-              日付:
-              {item.created_at
-                ? ` ${new Date(item.created_at).toLocaleString()}`
-                : " -"}
-            </p>
+                <p style={{ color: "#6b7280" }}>
+                  日付:
+                  {item.created_at
+                    ? ` ${new Date(item.created_at).toLocaleString()}`
+                    : " -"}
+                </p>
+              </div>
+
+              <Link
+                href={`/cases?edit=${item.id}`}
+                style={{
+                  background: "#2563eb",
+                  color: "white",
+                  textDecoration: "none",
+                  padding: "10px 16px",
+                  borderRadius: "10px",
+                  fontWeight: 700,
+                  display: "inline-block",
+                }}
+              >
+                編集する
+              </Link>
+            </div>
 
             <p style={{ marginBottom: "6px" }}>
               施術部位: {item.service_area || "-"}
@@ -183,7 +213,12 @@ export default function CaseDetailPage() {
             >
               {item.before_photo_url && (
                 <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
+                  <p
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
                     施術前
                   </p>
                   <img
@@ -196,7 +231,12 @@ export default function CaseDetailPage() {
 
               {item.tip_photo_url && (
                 <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
+                  <p
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
                     毛先
                   </p>
                   <img
@@ -209,7 +249,12 @@ export default function CaseDetailPage() {
 
               {item.after_photo_url && (
                 <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
+                  <p
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
                     仕上がり
                   </p>
                   <img
