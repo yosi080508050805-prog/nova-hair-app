@@ -2,6 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -25,29 +26,35 @@ type CaseItem = {
   created_at: string | null;
 };
 
-export default function CasesPage() {
-  const [cases, setCases] = useState<CaseItem[]>([]);
+export default function CaseDetailPage() {
+  const params = useParams();
+  const id = params?.id as string;
+
+  const [item, setItem] = useState<CaseItem | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadCases = async () => {
+    const loadCase = async () => {
       const { data, error } = await supabase
         .from("cases")
         .select("*")
-        .order("created_at", { ascending: false });
+        .eq("id", id)
+        .single();
 
       if (error) {
-        console.error("症例一覧読み込み失敗", error);
+        console.error("症例詳細読み込み失敗", error);
         setLoading(false);
         return;
       }
 
-      setCases((data as CaseItem[]) ?? []);
+      setItem(data as CaseItem);
       setLoading(false);
     };
 
-    loadCases();
-  }, []);
+    if (id) {
+      loadCase();
+    }
+  }, [id]);
 
   const pageStyle: React.CSSProperties = {
     minHeight: "100vh",
@@ -72,12 +79,20 @@ export default function CasesPage() {
     marginBottom: "16px",
   };
 
+  const photoStyle: React.CSSProperties = {
+    width: "100%",
+    maxWidth: "220px",
+    borderRadius: "12px",
+    border: "1px solid #e5e7eb",
+    objectFit: "cover",
+  };
+
   return (
     <main style={pageStyle}>
       <div style={containerStyle}>
         <div style={{ marginBottom: "24px" }}>
           <Link
-            href="/"
+            href="/cases"
             style={{
               display: "inline-block",
               marginBottom: "14px",
@@ -86,7 +101,7 @@ export default function CasesPage() {
               fontWeight: 700,
             }}
           >
-            ← トップへ戻る
+            ← 症例一覧へ戻る
           </Link>
 
           <h1
@@ -96,12 +111,8 @@ export default function CasesPage() {
               marginBottom: "8px",
             }}
           >
-            症例一覧
+            症例詳細
           </h1>
-
-          <p style={{ color: "#6b7280" }}>
-            保存済みの症例を新しい順で確認できます
-          </p>
         </div>
 
         {loading && (
@@ -110,166 +121,124 @@ export default function CasesPage() {
           </section>
         )}
 
-        {!loading && cases.length === 0 && (
+        {!loading && !item && (
           <section style={cardStyle}>
-            <p>まだ症例がありません</p>
+            <p>症例が見つかりません</p>
           </section>
         )}
 
-        {!loading &&
-          cases.map((item) => (
-            <section key={item.id} style={cardStyle}>
-              <div
+        {!loading && item && (
+          <section style={cardStyle}>
+            <h2
+              style={{
+                fontSize: "26px",
+                fontWeight: 700,
+                marginBottom: "12px",
+              }}
+            >
+              {item.customer_name || "名前未登録"}
+            </h2>
+
+            <p style={{ color: "#6b7280", marginBottom: "8px" }}>
+              日付:
+              {item.created_at
+                ? ` ${new Date(item.created_at).toLocaleString()}`
+                : " -"}
+            </p>
+
+            <p style={{ marginBottom: "6px" }}>
+              施術部位: {item.service_area || "-"}
+            </p>
+            <p style={{ marginBottom: "6px" }}>
+              根元: {item.root_result || "-"}
+            </p>
+            <p style={{ marginBottom: "6px" }}>
+              毛先: {item.tip_result || "-"}
+            </p>
+            <p style={{ marginBottom: "6px" }}>
+              中間処理: {item.treatment_result || "-"}
+            </p>
+
+            {item.warning && (
+              <p
                 style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "12px",
-                  alignItems: "center",
-                  flexWrap: "wrap",
+                  marginTop: "8px",
+                  marginBottom: "8px",
+                  color: "#dc2626",
+                  fontWeight: 700,
                 }}
               >
-                <div style={{ flex: 1, minWidth: "240px" }}>
-                  <h2
+                ⚠ {item.warning}
+              </p>
+            )}
+
+            <p style={{ color: "#6b7280", marginBottom: "18px" }}>
+              メモ: {item.memo || "-"}
+            </p>
+
+            <div
+              style={{
+                display: "flex",
+                gap: "16px",
+                flexWrap: "wrap",
+              }}
+            >
+              {item.before_photo_url && (
+                <div>
+                  <p
                     style={{
-                      fontSize: "22px",
-                      fontWeight: 700,
                       marginBottom: "8px",
+                      fontWeight: 700,
                     }}
                   >
-                    {item.customer_name || "名前未登録"}
-                  </h2>
-
-                  <p style={{ color: "#6b7280", marginBottom: "6px" }}>
-                    日付:
-                    {item.created_at
-                      ? ` ${new Date(item.created_at).toLocaleString()}`
-                      : " -"}
+                    施術前
                   </p>
-
-                  <p style={{ marginBottom: "4px" }}>
-                    施術部位: {item.service_area || "-"}
-                  </p>
-                  <p style={{ marginBottom: "4px" }}>
-                    根元: {item.root_result || "-"}
-                  </p>
-                  <p style={{ marginBottom: "4px" }}>
-                    毛先: {item.tip_result || "-"}
-                  </p>
-                  <p style={{ marginBottom: "4px" }}>
-                    中間処理: {item.treatment_result || "-"}
-                  </p>
-
-                  {item.warning && (
-                    <p
-                      style={{
-                        marginTop: "8px",
-                        color: "#dc2626",
-                        fontWeight: 700,
-                      }}
-                    >
-                      ⚠ {item.warning}
-                    </p>
-                  )}
-
-                  <p style={{ color: "#6b7280", marginTop: "8px" }}>
-                    メモ: {item.memo || "-"}
-                  </p>
+                  <img
+                    src={item.before_photo_url}
+                    alt="施術前"
+                    style={photoStyle}
+                  />
                 </div>
+              )}
 
-                {item.after_photo_url && (
+              {item.tip_photo_url && (
+                <div>
+                  <p
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    毛先
+                  </p>
+                  <img
+                    src={item.tip_photo_url}
+                    alt="毛先"
+                    style={photoStyle}
+                  />
+                </div>
+              )}
+
+              {item.after_photo_url && (
+                <div>
+                  <p
+                    style={{
+                      marginBottom: "8px",
+                      fontWeight: 700,
+                    }}
+                  >
+                    仕上がり
+                  </p>
                   <img
                     src={item.after_photo_url}
                     alt="仕上がり"
-                    style={{
-                      width: "120px",
-                      height: "120px",
-                      borderRadius: "12px",
-                      objectFit: "cover",
-                      border: "1px solid #e5e7eb",
-                    }}
+                    style={photoStyle}
                   />
-                )}
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  gap: "12px",
-                  marginTop: "14px",
-                  flexWrap: "wrap",
-                }}
-              >
-                {item.before_photo_url && (
-                  <div>
-                    <p
-                      style={{
-                        marginBottom: "6px",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                      }}
-                    >
-                      施術前
-                    </p>
-                    <img
-                      src={item.before_photo_url}
-                      alt="施術前"
-                      style={{
-                        width: "140px",
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                      }}
-                    />
-                  </div>
-                )}
-
-                {item.tip_photo_url && (
-                  <div>
-                    <p
-                      style={{
-                        marginBottom: "6px",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                      }}
-                    >
-                      毛先
-                    </p>
-                    <img
-                      src={item.tip_photo_url}
-                      alt="毛先"
-                      style={{
-                        width: "140px",
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                      }}
-                    />
-                  </div>
-                )}
-
-                {item.after_photo_url && (
-                  <div>
-                    <p
-                      style={{
-                        marginBottom: "6px",
-                        fontWeight: 700,
-                        fontSize: "14px",
-                      }}
-                    >
-                      仕上がり
-                    </p>
-                    <img
-                      src={item.after_photo_url}
-                      alt="仕上がり"
-                      style={{
-                        width: "140px",
-                        borderRadius: "12px",
-                        border: "1px solid #e5e7eb",
-                      }}
-                    />
-                  </div>
-                )}
-              </div>
-            </section>
-          ))}
+                </div>
+              )}
+            </div>
+          </section>
+        )}
       </div>
     </main>
   );
