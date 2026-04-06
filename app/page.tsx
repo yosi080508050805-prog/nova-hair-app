@@ -4,9 +4,11 @@ import { createClient } from "@supabase/supabase-js";
 import { useEffect, useMemo, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
+
 type SavedCase = {
   id: number;
   customerName: string;
@@ -22,7 +24,6 @@ type SavedCase = {
   tipPhotoUrl?: string;
   afterPhotoUrl?: string;
 };
-
 
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -64,50 +65,55 @@ export default function Home() {
   const [memo, setMemo] = useState("");
 
   const [cases, setCases] = useState<SavedCase[]>([]);
-const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
+  const [selectedCase, setSelectedCase] = useState<SavedCase | null>(null);
 
-useEffect(() => {
-  const loadCases = async () => {
-    const { data, error } = await supabase
-      .from("cases")
-      .select("*")
-      .order("created_at", { ascending: false });
+  useEffect(() => {
+    const loadCases = async () => {
+      const { data, error } = await supabase
+        .from("cases")
+        .select("*")
+        .order("created_at", { ascending: false });
 
-    if (error) {
-      console.error("読み込み失敗", error);
-      return;
-    }
+      if (error) {
+        console.error("読み込み失敗", error);
+        return;
+      }
 
-    const mapped = data.map((item: any) => ({
-      id: item.id,
-      customerName: item.customer_name,
-      title: item.customer_name,
-      date: new Date(item.created_at).toLocaleDateString(),
-      serviceArea: item.service_area,
-      root: item.root_result,
-      tip: item.tip_result,
-      treatment: item.treatment_result,
-      warning: item.warning,
-      memo: item.memo,
-      beforePhotoUrl: item.before_photo_url,
-      tipPhotoUrl: item.tip_photo_url,
-      afterPhotoUrl: item.after_photo_url,
-    }));
+      const mapped: SavedCase[] = (data ?? []).map((item: any) => ({
+        id: Number(item.id),
+        customerName: item.customer_name ?? "",
+        title:
+          item.customer_name && item.service_area
+            ? `${item.customer_name} / ${item.service_area}`
+            : item.customer_name ?? "症例",
+        date: item.created_at
+          ? new Date(item.created_at).toLocaleDateString()
+          : "",
+        serviceArea: item.service_area ?? "",
+        root: item.root_result ?? "",
+        tip: item.tip_result ?? "",
+        treatment: item.treatment_result ?? "",
+        warning: item.warning ?? "",
+        memo: item.memo ?? "",
+        beforePhotoUrl: item.before_photo_url ?? "",
+        tipPhotoUrl: item.tip_photo_url ?? "",
+        afterPhotoUrl: item.after_photo_url ?? "",
+      }));
 
-    setCases(mapped);
-  };
+      setCases(mapped);
+    };
 
-  loadCases();
-}, []);
+    loadCases();
+  }, []);
 
-const filteredCases = useMemo(() => {
-  const keyword = searchName.trim().toLowerCase();
-  if (!keyword) return cases;
+  const filteredCases = useMemo(() => {
+    const keyword = searchName.trim().toLowerCase();
+    if (!keyword) return cases;
 
-  return cases.filter((item) =>
-    item.customerName.toLowerCase().includes(keyword)
-  );
-}, [cases, searchName]);
+    return cases.filter((item) =>
+      item.customerName.toLowerCase().includes(keyword)
+    );
+  }, [cases, searchName]);
 
   const pageStyle = {
     minHeight: "100vh",
@@ -256,7 +262,8 @@ const filteredCases = useMemo(() => {
     if (!colorHistory) {
       if (hardness === "硬い" && wave === "普通") return "H.B（2:1）";
       if (hardness === "硬い" && wave === "強い") return "H.B（2:1）＋コンク10%";
-      if (hardness === "硬い" && wave === "かなり強い") return "H.B（2:1）＋コンク20%";
+      if (hardness === "硬い" && wave === "かなり強い")
+        return "H.B（2:1）＋コンク20%";
       if (hardness === "柔らかい" && wave === "普通") return "M.B（2:1）＋H 10%";
       if (hardness === "柔らかい" && wave === "強い") return "M.H（1:1）＋B 20%";
       if (hardness === "柔らかい" && wave === "かなり強い") {
@@ -406,68 +413,86 @@ const filteredCases = useMemo(() => {
       return;
     }
   }
-async function saveCase() {
-  if (!customerName.trim()) {
-    alert("お客様名を入力してください");
-    return;
+
+  async function saveCase() {
+    if (!customerName.trim()) {
+      alert("お客様名を入力してください");
+      return;
+    }
+
+    if (!rootResult && !tipResult) {
+      alert("先に薬剤選定してください");
+      return;
+    }
+
+    const titleParts = [
+      customerName || "お客様名未入力",
+      serviceArea || "施術部位未選択",
+      hardness || "硬さ未選択",
+      wave || "うねり未選択",
+    ];
+
+    const insertData = {
+      customer_name: customerName.trim(),
+      service_area: serviceArea || "",
+      root_result: rootResult || "未選定",
+      tip_result: tipResult || "未選定",
+      treatment_result: treatmentResult || "未判定",
+      warning: warning || "",
+      memo: memo || "メモなし",
+      before_photo_url: beforePhotoUrl || "",
+      tip_photo_url: tipPhotoUrl || "",
+      after_photo_url: afterPhotoUrl || "",
+      created_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from("cases")
+      .insert([insertData])
+      .select()
+      .single();
+
+    if (error) {
+      alert("クラウド保存に失敗しました");
+      console.error(error);
+      return;
+    }
+
+    const newCase: SavedCase = {
+      id: Number(data.id),
+      customerName: data.customer_name ?? "",
+      title: titleParts.join(" / "),
+      date: data.created_at
+        ? new Date(data.created_at).toLocaleDateString()
+        : new Date().toLocaleDateString(),
+      serviceArea: data.service_area ?? "",
+      root: data.root_result ?? "",
+      tip: data.tip_result ?? "",
+      treatment: data.treatment_result ?? "",
+      warning: data.warning ?? "",
+      memo: data.memo ?? "",
+      beforePhotoUrl: data.before_photo_url ?? "",
+      tipPhotoUrl: data.tip_photo_url ?? "",
+      afterPhotoUrl: data.after_photo_url ?? "",
+    };
+
+    setCases((prev) => [newCase, ...prev]);
+    setSelectedCase(newCase);
+    alert("症例をクラウド保存しました");
   }
 
-  if (!rootResult && !tipResult) {
-    alert("先に薬剤選定してください");
-    return;
-  }
+  async function deleteCase(id: number) {
+    const ok = window.confirm("この症例を削除しますか？");
+    if (!ok) return;
 
-  const titleParts = [
-    customerName || "お客様名未入力",
-    serviceArea || "施術部位未選択",
-    hardness || "硬さ未選択",
-    wave || "うねり未選択",
-  ];
+    const { error } = await supabase.from("cases").delete().eq("id", id);
 
-  const newCase: SavedCase = {
-    id: Date.now(),
-    customerName: customerName.trim(),
-    title: titleParts.join(" / "),
-    date: new Date().toLocaleDateString(),
-    serviceArea,
-    root: rootResult || "未選定",
-    tip: tipResult || "未選定",
-    treatment: treatmentResult || "未判定",
-    warning,
-    memo: memo || "メモなし",
-    beforePhotoUrl,
-    tipPhotoUrl,
-    afterPhotoUrl,
-  };
+    if (error) {
+      alert("削除に失敗しました");
+      console.error(error);
+      return;
+    }
 
-  const { error } = await supabase.from("cases").insert([
-    {
-      customer_name: newCase.customerName,
-      service_area: newCase.serviceArea,
-      root_result: newCase.root,
-      tip_result: newCase.tip,
-      treatment_result: newCase.treatment,
-      warning: newCase.warning,
-      memo: newCase.memo,
-      before_photo_url: newCase.beforePhotoUrl || "",
-      tip_photo_url: newCase.tipPhotoUrl || "",
-      after_photo_url: newCase.afterPhotoUrl || "",
-    },
-  ]);
-
-  if (error) {
-    alert("クラウド保存に失敗しました");
-    console.error(error);
-    return;
-  }
-
-  const updatedCases = [newCase, ...cases];
-  setCases(updatedCases);
-  setSelectedCase(newCase);
-  alert("症例をクラウド保存しました");
-}
-
-  function deleteCase(id: number) {
     const updated = cases.filter((item) => item.id !== id);
     setCases(updated);
 
