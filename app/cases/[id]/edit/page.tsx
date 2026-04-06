@@ -6,7 +6,8 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
@@ -120,8 +121,9 @@ export default function EditCasePage() {
     }
 
     localStorage.setItem("edit_case", JSON.stringify(payload));
-alert("更新完了");
-window.location.href = "/";
+    alert("更新完了");
+    window.location.href = "/";
+  };
 
   const pageStyle: React.CSSProperties = {
     minHeight: "100vh",
