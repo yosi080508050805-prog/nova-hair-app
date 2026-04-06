@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 export default function Home() {
   const [customerName, setCustomerName] = useState("");
@@ -12,55 +12,63 @@ export default function Home() {
   const [warning, setWarning] = useState("");
   const [memo, setMemo] = useState("");
 
+  useEffect(() => {
+    const editData = localStorage.getItem("edit_case");
+
+    if (editData) {
+      const data = JSON.parse(editData);
+
+      setCustomerName(data.customer_name || "");
+      setServiceArea(data.service_area || "");
+      setRoot(data.root_result || "");
+      setTip(data.tip_result || "");
+      setTreatment(data.treatment_result || "");
+      setWarning(data.warning || "");
+      setMemo(data.memo || "");
+
+      localStorage.removeItem("edit_case");
+    }
+  }, []);
+
+  const pageStyle: React.CSSProperties = {
+    maxWidth: "760px",
+    margin: "0 auto",
+    padding: "20px 16px 60px",
+    minHeight: "100vh",
+    background: "#f5f7fb",
+  };
+
+  const cardStyle: React.CSSProperties = {
+    background: "white",
+    borderRadius: "16px",
+    padding: "20px",
+    marginBottom: "20px",
+    border: "1px solid #e5e7eb",
+  };
+
+  const inputStyle: React.CSSProperties = {
+    width: "100%",
+    padding: "12px",
+    borderRadius: "12px",
+    border: "1px solid #d1d5db",
+    marginBottom: "12px",
+  };
+
   return (
-    <main
-      style={{
-        maxWidth: "760px",
-        margin: "0 auto",
-        padding: "20px 16px 60px",
-        minHeight: "100vh",
-        background: "#f5f7fb",
-      }}
-    >
-      <h1
-        style={{
-          fontSize: "28px",
-          fontWeight: 700,
-          marginBottom: "8px",
-          color: "#111827",
-        }}
-      >
-        nova
-      </h1>
+    <main style={pageStyle}>
+      <h1 style={{ fontSize: "28px", fontWeight: 700 }}>nova</h1>
 
-      <p
-        style={{
-          color: "#6b7280",
-          letterSpacing: "0.08em",
-          marginBottom: "8px",
-        }}
-      >
-        MEN&apos;S STRAIGHT PERM
-      </p>
+      <p style={{ color: "#6b7280" }}>MEN'S STRAIGHT PERM</p>
 
-      <p
-        style={{
-          fontSize: "20px",
-          fontWeight: 700,
-          color: "#111827",
-          marginBottom: "8px",
-        }}
-      >
+      <h2 style={{ fontSize: "20px", marginBottom: "12px" }}>
         薬剤選定アプリ
-      </p>
+      </h2>
 
       <div
         style={{
           display: "flex",
           gap: "12px",
-          marginTop: "12px",
           marginBottom: "20px",
-          flexWrap: "wrap",
         }}
       >
         <Link
@@ -71,8 +79,6 @@ export default function Home() {
             padding: "10px 16px",
             borderRadius: "10px",
             textDecoration: "none",
-            fontWeight: 600,
-            display: "inline-block",
           }}
         >
           症例一覧
@@ -86,192 +92,87 @@ export default function Home() {
             padding: "10px 16px",
             borderRadius: "10px",
             textDecoration: "none",
-            fontWeight: 600,
-            display: "inline-block",
           }}
         >
           顧客履歴
         </Link>
       </div>
 
-      <hr
-        style={{
-          marginBottom: "20px",
-          border: "none",
-          borderTop: "1px solid #e5e7eb",
-        }}
-      />
+      <section style={cardStyle}>
+        <h3>お客様情報</h3>
 
-      <section
-        style={{
-          background: "white",
-          borderRadius: "16px",
-          padding: "20px",
-          marginBottom: "20px",
-          border: "1px solid #e5e7eb",
-        }}
-      >
-        <h2
-          style={{
-            fontSize: "18px",
-            fontWeight: 700,
-            marginBottom: "12px",
-          }}
-        >
-          お客様情報
-        </h2>
-
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          お客様名
-        </p>
         <input
-          type="text"
+          placeholder="お客様名"
           value={customerName}
           onChange={(e) => setCustomerName(e.target.value)}
-          placeholder="例: 山田太郎"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          施術部位
-        </p>
         <input
-          type="text"
+          placeholder="施術部位"
           value={serviceArea}
           onChange={(e) => setServiceArea(e.target.value)}
-          placeholder="例: 全体"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          根元
-        </p>
         <input
-          type="text"
+          placeholder="根元"
           value={root}
           onChange={(e) => setRoot(e.target.value)}
-          placeholder="例: M.H（1:1）"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          毛先
-        </p>
         <input
-          type="text"
+          placeholder="毛先"
           value={tip}
           onChange={(e) => setTip(e.target.value)}
-          placeholder="例: 根元選定に準ずる"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          中間処理
-        </p>
         <textarea
+          placeholder="中間処理"
           value={treatment}
           onChange={(e) => setTreatment(e.target.value)}
-          placeholder="例: キトサン / CMC / ネクター"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            minHeight: "90px",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          注意
-        </p>
         <textarea
+          placeholder="注意"
           value={warning}
           onChange={(e) => setWarning(e.target.value)}
-          placeholder="例: 縮毛履歴あり"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            minHeight: "90px",
-            marginBottom: "12px",
-          }}
+          style={inputStyle}
         />
 
-        <p style={{ fontSize: "14px", marginBottom: "6px", color: "#6b7280" }}>
-          メモ
-        </p>
         <textarea
+          placeholder="メモ"
           value={memo}
           onChange={(e) => setMemo(e.target.value)}
-          placeholder="例: 次回は弱めスタート"
-          style={{
-            width: "100%",
-            padding: "12px",
-            borderRadius: "12px",
-            border: "1px solid #d1d5db",
-            fontSize: "16px",
-            boxSizing: "border-box",
-            background: "white",
-            minHeight: "90px",
-          }}
+          style={inputStyle}
         />
       </section>
 
       <button
-        type="button"
+        style={{
+          width: "100%",
+          padding: "16px",
+          background: "#2563eb",
+          color: "white",
+          borderRadius: "12px",
+          border: "none",
+        }}
+      >
+        薬剤選定する
+      </button>
+
+      <button
         style={{
           width: "100%",
           padding: "16px",
           background: "#4caf50",
           color: "white",
           borderRadius: "12px",
-          fontWeight: 700,
           border: "none",
-          cursor: "pointer",
+          marginTop: "12px",
         }}
       >
         症例を保存する
