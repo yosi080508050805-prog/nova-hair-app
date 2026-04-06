@@ -1,54 +1,10 @@
 "use client";
 
-import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
 import { useState } from "react";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const supabaseKey =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY!;
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
 export default function Home() {
   const [customerName, setCustomerName] = useState("");
-  const [beforePhotoUrl, setBeforePhotoUrl] = useState("");
-  const [afterPhotoUrl, setAfterPhotoUrl] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const handlePhotoChange = async (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "before" | "after"
-  ) => {
-    if (!e.target.files?.length) return;
-
-    const file = e.target.files[0];
-    const fileName = `${Date.now()}_${file.name}`;
-
-    setLoading(true);
-
-    const { error } = await supabase.storage
-      .from("photos")
-      .upload(fileName, file);
-
-    if (error) {
-      setLoading(false);
-      alert("アップロード失敗");
-      return;
-    }
-
-    const { data: urlData } = supabase.storage
-      .from("photos")
-      .getPublicUrl(fileName);
-
-    if (type === "before") {
-      setBeforePhotoUrl(urlData.publicUrl);
-    } else {
-      setAfterPhotoUrl(urlData.publicUrl);
-    }
-
-    setLoading(false);
-  };
 
   const cardStyle: React.CSSProperties = {
     background: "white",
@@ -78,13 +34,6 @@ export default function Home() {
     fontSize: "16px",
     boxSizing: "border-box",
     background: "white",
-  };
-
-  const photoPreviewStyle: React.CSSProperties = {
-    width: "100%",
-    marginTop: "10px",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
   };
 
   return (
@@ -194,38 +143,10 @@ export default function Home() {
 
       <section style={cardStyle}>
         <h2 style={sectionTitleStyle}>写真</h2>
-
-        <div style={{ marginBottom: "18px" }}>
-          <p style={smallLabelStyle}>施術前写真</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handlePhotoChange(e, "before")}
-          />
-          {beforePhotoUrl && (
-            <img
-              src={beforePhotoUrl}
-              alt="施術前"
-              style={photoPreviewStyle}
-            />
-          )}
-        </div>
-
-        <div>
-          <p style={smallLabelStyle}>仕上がり写真</p>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={(e) => handlePhotoChange(e, "after")}
-          />
-          {afterPhotoUrl && (
-            <img
-              src={afterPhotoUrl}
-              alt="仕上がり"
-              style={photoPreviewStyle}
-            />
-          )}
-        </div>
+        <p style={{ color: "#6b7280", lineHeight: 1.7 }}>
+          トップページは表示確認用に軽くしています。<br />
+          症例保存・顧客履歴は上のボタンから使えます。
+        </p>
       </section>
 
       <button
@@ -247,7 +168,6 @@ export default function Home() {
 
       <button
         type="button"
-        disabled={loading}
         style={{
           width: "100%",
           padding: "16px",
@@ -256,8 +176,7 @@ export default function Home() {
           borderRadius: "12px",
           fontWeight: 700,
           border: "none",
-          cursor: loading ? "not-allowed" : "pointer",
-          opacity: loading ? 0.7 : 1,
+          cursor: "pointer",
         }}
       >
         症例を保存する
