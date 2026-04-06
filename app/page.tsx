@@ -2,7 +2,7 @@
 
 import { createClient } from "@supabase/supabase-js";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -11,248 +11,146 @@ const supabaseKey =
 
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-type CaseItem = {
-  id: number;
-  customer_name: string | null;
-  service_area: string | null;
-  root_result: string | null;
-  tip_result: string | null;
-  treatment_result: string | null;
-  warning: string | null;
-  memo: string | null;
-  before_photo_url: string | null;
-  tip_photo_url: string | null;
-  after_photo_url: string | null;
-  created_at: string | null;
-};
+export default function Home() {
+  const searchParams = useSearchParams();
+  const editId = searchParams.get("edit");
 
-export default function CaseDetailPage() {
-  const params = useParams();
-  const id = params?.id as string;
+  const [editingId, setEditingId] = useState<number | null>(null);
 
-  const [item, setItem] = useState<CaseItem | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [customerName, setCustomerName] = useState("");
+  const [serviceArea, setServiceArea] = useState("");
+  const [root, setRoot] = useState("");
+  const [tip, setTip] = useState("");
+  const [treatment, setTreatment] = useState("");
+  const [warning, setWarning] = useState("");
+  const [memo, setMemo] = useState("");
+
+  const [beforePhotoUrl, setBeforePhotoUrl] = useState("");
+  const [tipPhotoUrl, setTipPhotoUrl] = useState("");
+  const [afterPhotoUrl, setAfterPhotoUrl] = useState("");
 
   useEffect(() => {
-    const loadCase = async () => {
-      const { data, error } = await supabase
+    const loadEditCase = async () => {
+      if (!editId) return;
+
+      const { data } = await supabase
         .from("cases")
         .select("*")
-        .eq("id", id)
+        .eq("id", editId)
         .single();
 
-      if (error) {
-        console.error("症例詳細読み込み失敗", error);
-        setLoading(false);
-        return;
-      }
+      if (!data) return;
 
-      setItem(data as CaseItem);
-      setLoading(false);
+      setEditingId(data.id);
+      setCustomerName(data.customer_name || "");
+      setServiceArea(data.service_area || "");
+      setRoot(data.root_result || "");
+      setTip(data.tip_result || "");
+      setTreatment(data.treatment_result || "");
+      setWarning(data.warning || "");
+      setMemo(data.memo || "");
+      setBeforePhotoUrl(data.before_photo_url || "");
+      setTipPhotoUrl(data.tip_photo_url || "");
+      setAfterPhotoUrl(data.after_photo_url || "");
     };
 
-    if (id) {
-      loadCase();
+    loadEditCase();
+  }, [editId]);
+
+  const saveCase = async () => {
+    const payload = {
+      customer_name: customerName,
+      service_area: serviceArea,
+      root_result: root,
+      tip_result: tip,
+      treatment_result: treatment,
+      warning,
+      memo,
+      before_photo_url: beforePhotoUrl,
+      tip_photo_url: tipPhotoUrl,
+      after_photo_url: afterPhotoUrl,
+    };
+
+    let error;
+
+    if (editingId) {
+      const { error: updateError } = await supabase
+        .from("cases")
+        .update(payload)
+        .eq("id", editingId);
+
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from("cases")
+        .insert([payload]);
+
+      error = insertError;
     }
-  }, [id]);
 
-  const pageStyle: React.CSSProperties = {
-    minHeight: "100vh",
-    backgroundColor: "#f5f7fb",
-    padding: "20px 16px 80px",
-    fontFamily:
-      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
-    color: "#111827",
-  };
+    if (error) {
+      alert("保存失敗");
+      return;
+    }
 
-  const containerStyle: React.CSSProperties = {
-    maxWidth: "900px",
-    margin: "0 auto",
-  };
-
-  const cardStyle: React.CSSProperties = {
-    backgroundColor: "#ffffff",
-    borderRadius: "18px",
-    padding: "18px",
-    boxShadow: "0 6px 20px rgba(15, 23, 42, 0.06)",
-    border: "1px solid #e5e7eb",
-    marginBottom: "16px",
-  };
-
-  const photoStyle: React.CSSProperties = {
-    width: "100%",
-    maxWidth: "220px",
-    borderRadius: "12px",
-    border: "1px solid #e5e7eb",
-    objectFit: "cover",
+    alert("保存完了");
+    window.location.href = "/cases";
   };
 
   return (
-    <main style={pageStyle}>
-      <div style={containerStyle}>
-        <div style={{ marginBottom: "24px" }}>
-          <Link
-            href="/cases"
-            style={{
-              display: "inline-block",
-              marginBottom: "14px",
-              color: "#2563eb",
-              textDecoration: "none",
-              fontWeight: 700,
-            }}
-          >
-            ← 症例一覧へ戻る
-          </Link>
+    <main style={{ maxWidth: 600, margin: "auto", padding: 20 }}>
+      <h1>nova</h1>
+      <p>MEN'S STRAIGHT PERM</p>
 
-          <h1
-            style={{
-              fontSize: "30px",
-              fontWeight: 700,
-              marginBottom: "8px",
-            }}
-          >
-            症例詳細
-          </h1>
-        </div>
-
-        {loading && (
-          <section style={cardStyle}>
-            <p>読み込み中...</p>
-          </section>
-        )}
-
-        {!loading && !item && (
-          <section style={cardStyle}>
-            <p>症例が見つかりません</p>
-          </section>
-        )}
-
-        {!loading && item && (
-          <section style={cardStyle}>
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                gap: "12px",
-                flexWrap: "wrap",
-                alignItems: "center",
-                marginBottom: "18px",
-              }}
-            >
-              <div>
-                <h2
-                  style={{
-                    fontSize: "26px",
-                    fontWeight: 700,
-                    marginBottom: "6px",
-                  }}
-                >
-                  {item.customer_name || "名前未登録"}
-                </h2>
-
-                <p style={{ color: "#6b7280" }}>
-                  日付:
-                  {item.created_at
-                    ? ` ${new Date(item.created_at).toLocaleString()}`
-                    : " -"}
-                </p>
-              </div>
-
-              <Link
-                href={`/?edit=${item.id}`}
-                style={{
-                  background: "#2563eb",
-                  color: "white",
-                  textDecoration: "none",
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  fontWeight: 700,
-                  display: "inline-block",
-                }}
-              >
-                編集する
-              </Link>
-            </div>
-
-            <p style={{ marginBottom: "6px" }}>
-              施術部位: {item.service_area || "-"}
-            </p>
-            <p style={{ marginBottom: "6px" }}>
-              根元: {item.root_result || "-"}
-            </p>
-            <p style={{ marginBottom: "6px" }}>
-              毛先: {item.tip_result || "-"}
-            </p>
-            <p style={{ marginBottom: "6px" }}>
-              中間処理: {item.treatment_result || "-"}
-            </p>
-
-            {item.warning && (
-              <p
-                style={{
-                  marginTop: "8px",
-                  marginBottom: "8px",
-                  color: "#dc2626",
-                  fontWeight: 700,
-                }}
-              >
-                ⚠ {item.warning}
-              </p>
-            )}
-
-            <p style={{ color: "#6b7280", marginBottom: "18px" }}>
-              メモ: {item.memo || "-"}
-            </p>
-
-            <div
-              style={{
-                display: "flex",
-                gap: "16px",
-                flexWrap: "wrap",
-              }}
-            >
-              {item.before_photo_url && (
-                <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
-                    施術前
-                  </p>
-                  <img
-                    src={item.before_photo_url}
-                    alt="施術前"
-                    style={photoStyle}
-                  />
-                </div>
-              )}
-
-              {item.tip_photo_url && (
-                <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
-                    毛先
-                  </p>
-                  <img
-                    src={item.tip_photo_url}
-                    alt="毛先"
-                    style={photoStyle}
-                  />
-                </div>
-              )}
-
-              {item.after_photo_url && (
-                <div>
-                  <p style={{ marginBottom: "8px", fontWeight: 700 }}>
-                    仕上がり
-                  </p>
-                  <img
-                    src={item.after_photo_url}
-                    alt="仕上がり"
-                    style={photoStyle}
-                  />
-                </div>
-              )}
-            </div>
-          </section>
-        )}
+      <div style={{ marginBottom: 20 }}>
+        <Link href="/cases">症例一覧</Link>
       </div>
+
+      <input
+        placeholder="お客様名"
+        value={customerName}
+        onChange={(e) => setCustomerName(e.target.value)}
+      />
+
+      <input
+        placeholder="施術部位"
+        value={serviceArea}
+        onChange={(e) => setServiceArea(e.target.value)}
+      />
+
+      <input
+        placeholder="根元"
+        value={root}
+        onChange={(e) => setRoot(e.target.value)}
+      />
+
+      <input
+        placeholder="毛先"
+        value={tip}
+        onChange={(e) => setTip(e.target.value)}
+      />
+
+      <textarea
+        placeholder="中間処理"
+        value={treatment}
+        onChange={(e) => setTreatment(e.target.value)}
+      />
+
+      <textarea
+        placeholder="注意"
+        value={warning}
+        onChange={(e) => setWarning(e.target.value)}
+      />
+
+      <textarea
+        placeholder="メモ"
+        value={memo}
+        onChange={(e) => setMemo(e.target.value)}
+      />
+
+      <button onClick={saveCase}>
+        {editingId ? "更新する" : "症例保存"}
+      </button>
     </main>
   );
 }
