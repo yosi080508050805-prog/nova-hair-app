@@ -1,6 +1,7 @@
 "use client";
 
 import { createClient } from "@supabase/supabase-js";
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -635,7 +636,43 @@ export default function Home() {
           </p>
 
           <p style={{ fontSize: "20px", fontWeight: 700 }}>薬剤選定アプリ</p>
+<div
+  style={{
+    display: "flex",
+    gap: "12px",
+    marginTop: "12px",
+    marginBottom: "20px",
+    flexWrap: "wrap"
+  }}
+>
+  <Link
+    href="/cases"
+    style={{
+      background: "#2563eb",
+      color: "white",
+      padding: "10px 16px",
+      borderRadius: "10px",
+      textDecoration: "none",
+      fontWeight: 600
+    }}
+  >
+    症例一覧
+  </Link>
 
+  <Link
+    href="/customers"
+    style={{
+      background: "#111827",
+      color: "white",
+      padding: "10px 16px",
+      borderRadius: "10px",
+      textDecoration: "none",
+      fontWeight: 600
+    }}
+  >
+    顧客履歴
+  </Link>
+</div>
           <hr
             style={{
               marginTop: "12px",
