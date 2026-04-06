@@ -641,18 +641,9 @@ export default function Home() {
     display: "flex",
     gap: "12px",
     marginTop: "12px",
-    marginBottom: "20px",
-    flexWrap: "wrap"
-  }}
->
-  <div
-  style={{
-    display: "flex",
-    gap: "12px",
-    marginTop: "12px",
     marginBottom: "20px"
   }}
->
+  >
   <Link
     href="/cases"
     style={{
@@ -681,17 +672,6 @@ export default function Home() {
     顧客履歴
   </Link>
 </div>
-    顧客履歴
-  </Link>
-</div>
-          <hr
-            style={{
-              marginTop: "12px",
-              border: "none",
-              borderTop: "1px solid #e5e7eb",
-            }}
-          />
-        </div>
 
         <section style={cardStyle}>
           <h2 style={sectionTitleStyle}>お客様情報</h2>
