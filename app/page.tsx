@@ -27,6 +27,20 @@ type SavedCase = {
   afterPhotoUrl?: string;
 };
 
+type EditCasePayload = {
+  id?: number;
+  customer_name?: string | null;
+  service_area?: string | null;
+  root_result?: string | null;
+  tip_result?: string | null;
+  treatment_result?: string | null;
+  warning?: string | null;
+  memo?: string | null;
+  before_photo_url?: string | null;
+  tip_photo_url?: string | null;
+  after_photo_url?: string | null;
+};
+
 export default function Home() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginId, setLoginId] = useState("");
@@ -107,12 +121,14 @@ export default function Home() {
     };
 
     loadCases();
-  }, []);  useEffect(() => {
+  }, []);
+
+  useEffect(() => {
     const raw = localStorage.getItem("edit_case");
     if (!raw) return;
 
     try {
-      const data = JSON.parse(raw);
+      const data = JSON.parse(raw) as EditCasePayload;
 
       setEditingId(data.id ? Number(data.id) : null);
       setCustomerName(data.customer_name || "");
@@ -139,9 +155,7 @@ export default function Home() {
     return cases.filter((item) =>
       item.customerName.toLowerCase().includes(keyword)
     );
-  }, [cases, searchName]);
-
-  const pageStyle = {
+  }, [cases, searchName]);  const pageStyle = {
     minHeight: "100vh",
     backgroundColor: "#f5f7fb",
     padding: "20px 16px 120px",
@@ -192,7 +206,9 @@ export default function Home() {
     minWidth: "108px",
     fontSize: "15px",
     fontWeight: 600,
-    boxShadow: selected ? "0 4px 10px rgba(17,24,39,0.15)" : "none",
+    boxShadow: selected
+      ? "0 4px 10px rgba(17,24,39,0.15)"
+      : "none",
   });
 
   const primaryButtonStyle = {
@@ -263,9 +279,7 @@ export default function Home() {
     if (type === "before") setBeforePhotoUrl(dataUrl);
     if (type === "tip") setTipPhotoUrl(dataUrl);
     if (type === "after") setAfterPhotoUrl(dataUrl);
-  }
-
-  function getRootFormula() {
+  }  function getRootFormula() {
     if (!hardness || !wave || !damage) {
       return "未選択の項目があります";
     }
@@ -284,27 +298,33 @@ export default function Home() {
     }
 
     if (!colorHistory) {
-      if (hardness === "硬い" && wave === "普通") return "H.B（2:1）";
+      if (hardness === "硬い" && wave === "普通")
+        return "H.B（2:1）";
+
       if (hardness === "硬い" && wave === "強い")
         return "H.B（2:1）＋コンク10%";
+
       if (hardness === "硬い" && wave === "かなり強い")
         return "H.B（2:1）＋コンク20%";
+
       if (hardness === "柔らかい" && wave === "普通")
         return "M.B（2:1）＋H 10%";
+
       if (hardness === "柔らかい" && wave === "強い")
         return "M.H（1:1）＋B 20%";
-      if (hardness === "柔らかい" && wave === "かなり強い") {
+
+      if (hardness === "柔らかい" && wave === "かなり強い")
         return "H.M（2:1）＋B 20%＋コンク10%";
-      }
     } else {
-      if (hardness === "硬い") return "M.S（1:1）＋H 10%";
-      if (hardness === "柔らかい") return "S.M（1:1）";
+      if (hardness === "硬い")
+        return "M.S（1:1）＋H 10%";
+
+      if (hardness === "柔らかい")
+        return "S.M（1:1）";
     }
 
     return "条件に合う選定がまだありません";
-  }
-
-  function getTipFormula() {
+    function getTipFormula() {
     if (!tipHistory) return "毛先履歴を選択してください";
 
     if (tipHistory === "縮毛履歴") {
@@ -349,13 +369,12 @@ export default function Home() {
       serviceArea === "毛先のみ補正" ||
       serviceArea === "全体（履歴なし）"
     ) {
-      text += " / アンジー（CMC）：必須 / ネクター（セラック）：必須";
+      text +=
+        " / アンジー（CMC）：必須 / ネクター（セラック）：必須";
     }
 
     return text;
-  }
-
-  function handleSelect() {
+  }  function handleSelect() {
     setWarning("");
     setRootResult("");
     setTipResult("");
@@ -373,7 +392,9 @@ export default function Home() {
       setTreatmentResult(getTreatmentGuide());
 
       if (straightHistory) {
-        setWarning("縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須");
+        setWarning(
+          "縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須"
+        );
       }
       return;
     }
@@ -384,7 +405,9 @@ export default function Home() {
       setTreatmentResult(getTreatmentGuide());
 
       if (straightHistory) {
-        setWarning("縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須");
+        setWarning(
+          "縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須"
+        );
       }
       return;
     }
@@ -394,8 +417,14 @@ export default function Home() {
       setTipResult(getTipFormula());
       setTreatmentResult(getTreatmentGuide());
 
-      if (straightHistory || permHistory || tipHistory === "縮毛履歴") {
-        setWarning("既施術部補正：過反応注意。毛先の状態確認必須");
+      if (
+        straightHistory ||
+        permHistory ||
+        tipHistory === "縮毛履歴"
+      ) {
+        setWarning(
+          "既施術部補正：過反応注意。毛先の状態確認必須"
+        );
       }
       return;
     }
@@ -405,8 +434,13 @@ export default function Home() {
       setTipResult(getTipFormula());
       setTreatmentResult(getTreatmentGuide());
 
-      if (tipHistory === "縮毛履歴" && tipFinishGoal === "曲げたい") {
-        setWarning("縮毛履歴毛先を曲げる場合：やり直し選定で対応");
+      if (
+        tipHistory === "縮毛履歴" &&
+        tipFinishGoal === "曲げたい"
+      ) {
+        setWarning(
+          "縮毛履歴毛先を曲げる場合：やり直し選定で対応"
+        );
       }
     }
   }
@@ -423,7 +457,9 @@ export default function Home() {
       if (hardness === "硬い") {
         setAction10min("B単品を被せる");
       } else if (hardness === "柔らかい") {
-        setAction10min("B + アルギニンクリーム（1:1）を被せる");
+        setAction10min(
+          "B + アルギニンクリーム（1:1）を被せる"
+        );
       } else {
         setAction10min("B追加を検討");
       }
@@ -431,17 +467,19 @@ export default function Home() {
     }
 
     if (status === "金色っぽい・少し引っかかる") {
-      setAction10min("CMCを塗布（反応を落ち着かせるが還元は進める）");
+      setAction10min(
+        "CMCを塗布（反応を落ち着かせるが還元は進める）"
+      );
       return;
     }
 
     if (status === "縮れる・ふにゃふにゃ") {
-      setAction10min("ベルバフを塗布（反応停止・断毛防止）");
+      setAction10min(
+        "ベルバフを塗布（反応停止・断毛防止）"
+      );
       return;
     }
-  }
-
-  async function saveCase() {
+  }  async function saveCase() {
     if (!customerName.trim()) {
       alert("お客様名を入力してください");
       return;
@@ -453,23 +491,34 @@ export default function Home() {
     }
 
     const payload = {
-      customer_name: customerName.trim(),
-      service_area: serviceArea || "",
-      root_result: rootResult || "未選定",
-      tip_result: tipResult || "未選定",
-      treatment_result: treatmentResult || "未判定",
-      warning: warning || "",
-      memo: memo || "メモなし",
-      before_photo_url: beforePhotoUrl || "",
-      tip_photo_url: tipPhotoUrl || "",
-      after_photo_url: afterPhotoUrl || "",
+      customer_name: customerName,
+      service_area: serviceArea,
+      root_result: rootResult,
+      tip_result: tipResult,
+      treatment_result: treatmentResult,
+      warning,
+      memo,
+      before_photo_url: beforePhotoUrl,
+      tip_photo_url: tipPhotoUrl,
+      after_photo_url: afterPhotoUrl,
     };
 
-    const { data, error } = await supabase
-      .from("cases")
-      .insert([payload])
-      .select()
-      .single();
+    let error;
+
+    if (editingId) {
+      const { error: updateError } = await supabase
+        .from("cases")
+        .update(payload)
+        .eq("id", editingId);
+
+      error = updateError;
+    } else {
+      const { error: insertError } = await supabase
+        .from("cases")
+        .insert([payload]);
+
+      error = insertError;
+    }
 
     if (error) {
       console.error(error);
@@ -477,51 +526,25 @@ export default function Home() {
       return;
     }
 
-    const newCase: SavedCase = {
-      id: Number(data.id),
-      customerName: data.customer_name ?? "",
-      title: [
-        data.customer_name ?? "お客様名未入力",
-        data.service_area ?? "施術部位未選択",
-        data.root_result ?? "根元未選定",
-      ].join(" / "),
-      date: data.created_at
-        ? new Date(data.created_at).toLocaleDateString()
-        : new Date().toLocaleDateString(),
-      serviceArea: data.service_area ?? "",
-      root: data.root_result ?? "",
-      tip: data.tip_result ?? "",
-      treatment: data.treatment_result ?? "",
-      warning: data.warning ?? "",
-      memo: data.memo ?? "",
-      beforePhotoUrl: data.before_photo_url ?? "",
-      tipPhotoUrl: data.tip_photo_url ?? "",
-      afterPhotoUrl: data.after_photo_url ?? "",
-    };
-
-    setCases((prev) => [newCase, ...prev]);
-    setSelectedCase(newCase);
     alert("症例をクラウド保存しました");
+    window.location.reload();
   }
 
   async function deleteCase(id: number) {
-    const ok = window.confirm("この症例を削除しますか？");
+    const ok = window.confirm("削除しますか？");
     if (!ok) return;
 
-    const { error } = await supabase.from("cases").delete().eq("id", id);
+    const { error } = await supabase
+      .from("cases")
+      .delete()
+      .eq("id", id);
 
     if (error) {
-      console.error(error);
-      alert("削除に失敗しました");
+      alert("削除失敗");
       return;
     }
 
-    const updated = cases.filter((item) => item.id !== id);
-    setCases(updated);
-
-    if (selectedCase?.id === id) {
-      setSelectedCase(null);
-    }
+    setCases((prev) => prev.filter((c) => c.id !== id));
   }  if (!isLoggedIn) {
     return (
       <main
@@ -614,18 +637,17 @@ export default function Home() {
         </div>
       </main>
     );
-  }
-
-  return (
+  }  return (
     <main style={pageStyle}>
       <div style={containerStyle}>
-        <div style={{ marginBottom: "24px" }}>
+        <div style={{ marginBottom: "24px", padding: "16px 4px" }}>
           <h1
             style={{
               fontSize: "32px",
               fontWeight: 300,
-              fontFamily: "serif",
+              letterSpacing: "0.06em",
               marginBottom: "6px",
+              fontFamily: "serif",
             }}
           >
             nova
@@ -633,44 +655,59 @@ export default function Home() {
 
           <p
             style={{
+              fontSize: "14px",
               color: "#6b7280",
-              marginBottom: "10px",
               letterSpacing: "0.08em",
+              marginBottom: "4px",
             }}
           >
             MEN'S STRAIGHT PERM
           </p>
 
-          <div style={{ marginTop: "14px" }}>
-            <Link href="/cases">
-              <button
-                style={{
-                  padding: "10px 16px",
-                  marginRight: "10px",
-                  borderRadius: "10px",
-                  background: "#2563eb",
-                  color: "#fff",
-                  border: "none",
-                }}
-              >
-                症例一覧
-              </button>
-            </Link>
+          <p style={{ fontSize: "20px", fontWeight: 700 }}>
+            薬剤選定アプリ
+          </p>
 
-            <Link href="/customers">
-              <button
-                style={{
-                  padding: "10px 16px",
-                  borderRadius: "10px",
-                  background: "#111827",
-                  color: "#fff",
-                  border: "none",
-                }}
-              >
-                顧客履歴
-              </button>
-            </Link>
-          </div>
+          <hr
+            style={{
+              marginTop: "12px",
+              border: "none",
+              borderTop: "1px solid #e5e7eb",
+            }}
+          />
+        </div>
+
+        <div style={{ marginBottom: "20px" }}>
+          <Link href="/cases">
+            <button
+              style={{
+                padding: "10px 16px",
+                marginRight: "10px",
+                borderRadius: "10px",
+                background: "#2563eb",
+                color: "#fff",
+                border: "none",
+                fontWeight: 600,
+              }}
+            >
+              症例一覧
+            </button>
+          </Link>
+
+          <Link href="/customers">
+            <button
+              style={{
+                padding: "10px 16px",
+                borderRadius: "10px",
+                background: "#111827",
+                color: "#fff",
+                border: "none",
+                fontWeight: 600,
+              }}
+            >
+              顧客履歴
+            </button>
+          </Link>
         </div>        <section style={cardStyle}>
           <h2 style={sectionTitleStyle}>お客様情報</h2>
 
@@ -698,7 +735,10 @@ export default function Home() {
             />
 
             {beforePhotoUrl && (
-              <img src={beforePhotoUrl} style={photoPreviewStyle} />
+              <img
+                src={beforePhotoUrl}
+                style={photoPreviewStyle}
+              />
             )}
           </div>
 
@@ -710,7 +750,10 @@ export default function Home() {
             />
 
             {tipPhotoUrl && (
-              <img src={tipPhotoUrl} style={photoPreviewStyle} />
+              <img
+                src={tipPhotoUrl}
+                style={photoPreviewStyle}
+              />
             )}
           </div>
 
@@ -722,12 +765,13 @@ export default function Home() {
             />
 
             {afterPhotoUrl && (
-              <img src={afterPhotoUrl} style={photoPreviewStyle} />
+              <img
+                src={afterPhotoUrl}
+                style={photoPreviewStyle}
+              />
             )}
           </div>
-        </section>
-
-        <div
+        </section>        <div
           style={{
             position: "sticky",
             bottom: "16px",
