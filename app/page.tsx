@@ -125,9 +125,7 @@ export default function Home() {
 
   useEffect(() => {
     const raw = localStorage.getItem("edit_case");
-    if (!raw) return;
-
-    try {
+    if (!raw) return;    try {
       const data = JSON.parse(raw) as EditCasePayload;
 
       setEditingId(data.id ? Number(data.id) : null);
@@ -150,12 +148,12 @@ export default function Home() {
 
   const filteredCases = useMemo(() => {
     const keyword = searchName.trim().toLowerCase();
-    if (!keyword) return cases;
-
-    return cases.filter((item) =>
+    if (!keyword) return cases;    return cases.filter((item) =>
       item.customerName.toLowerCase().includes(keyword)
     );
-  }, [cases, searchName]);  const pageStyle = {
+  }, [cases, searchName]);
+
+  const pageStyle = {
     minHeight: "100vh",
     backgroundColor: "#f5f7fb",
     padding: "20px 16px 120px",
@@ -188,9 +186,7 @@ export default function Home() {
     fontSize: "14px",
     color: "#6b7280",
     marginBottom: "8px",
-  };
-
-  const rowStyle = {
+  };  const rowStyle = {
     display: "flex",
     gap: "10px",
     flexWrap: "wrap" as const,
@@ -240,16 +236,16 @@ export default function Home() {
     borderRadius: "12px",
     objectFit: "cover" as const,
     border: "1px solid #e5e7eb",
-  };
-
-  const compareItemStyle = {
+  };  const compareItemStyle = {
     border: "1px solid #e5e7eb",
     borderRadius: "14px",
     padding: "14px",
     backgroundColor: "#fff",
     cursor: "pointer",
     marginBottom: "10px",
-  };  function handleLogin() {
+  };
+
+  function handleLogin() {
     if (loginId === "nova" && loginPassword === "yosi0805") {
       setIsLoggedIn(true);
       setLoginError("");
@@ -313,8 +309,9 @@ export default function Home() {
       if (hardness === "柔らかい" && wave === "強い")
         return "M.H（1:1）＋B 20%";
 
-      if (hardness === "柔らかい" && wave === "かなり強い")
+      if (hardness === "柔らかい" && wave === "かなり強い") {
         return "H.M（2:1）＋B 20%＋コンク10%";
+      }
     } else {
       if (hardness === "硬い")
         return "M.S（1:1）＋H 10%";
@@ -324,7 +321,7 @@ export default function Home() {
     }
 
     return "条件に合う選定がまだありません";
-    function getTipFormula() {
+  }  function getTipFormula() {
     if (!tipHistory) return "毛先履歴を選択してください";
 
     if (tipHistory === "縮毛履歴") {
@@ -343,25 +340,36 @@ export default function Home() {
       return "S.M 4:1";
     }
 
-    if (tipHistory === "ハイダメージ") return "S単品";
-    if (tipState === "ビビり気味") return "S単品";
+    if (tipHistory === "ハイダメージ")
+      return "S単品";
+
+    if (tipState === "ビビり気味")
+      return "S単品";
 
     if (tipState === "パサつき強い") {
-      if (tipHardness === "硬い" && tipReason === "癖由来") {
+      if (
+        tipHardness === "硬い" &&
+        tipReason === "癖由来"
+      ) {
         return "S.H 1:1";
       }
       return "1:1";
     }
 
-    if (tipHistory === "カラー＋パーマ") return "1:1（慎重施術）";
-    if (tipHistory === "カラー履歴") return "1:1";
-    if (tipHistory === "パーマ履歴") return "1:1";
-    if (tipHistory === "バージン毛") return "根元選定に準ずる";
+    if (tipHistory === "カラー＋パーマ")
+      return "1:1（慎重施術）";
+
+    if (tipHistory === "カラー履歴")
+      return "1:1";
+
+    if (tipHistory === "パーマ履歴")
+      return "1:1";
+
+    if (tipHistory === "バージン毛")
+      return "根元選定に準ずる";
 
     return "毛先条件に合う選定がまだありません";
-  }
-
-  function getTreatmentGuide() {
+  }  function getTreatmentGuide() {
     let text = "キトサン：必須";
 
     if (
@@ -374,7 +382,9 @@ export default function Home() {
     }
 
     return text;
-  }  function handleSelect() {
+  }
+
+  function handleSelect() {
     setWarning("");
     setRootResult("");
     setTipResult("");
@@ -396,10 +406,9 @@ export default function Home() {
           "縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須"
         );
       }
-      return;
-    }
 
-    if (serviceArea === "根元＋毛先") {
+      return;
+    }    if (serviceArea === "根元＋毛先") {
       setRootResult(getRootFormula());
       setTipResult(getTipFormula());
       setTreatmentResult(getTreatmentGuide());
@@ -409,6 +418,7 @@ export default function Home() {
           "縮毛履歴あり：薬剤反応を慎重に確認。10分チェック必須"
         );
       }
+
       return;
     }
 
@@ -426,6 +436,7 @@ export default function Home() {
           "既施術部補正：過反応注意。毛先の状態確認必須"
         );
       }
+
       return;
     }
 
@@ -443,9 +454,7 @@ export default function Home() {
         );
       }
     }
-  }
-
-  function handle10MinCheck(status: string) {
+  }  function handle10MinCheck(status: string) {
     setCheck10min(status);
 
     if (status === "伸び始めている") {
@@ -463,6 +472,7 @@ export default function Home() {
       } else {
         setAction10min("B追加を検討");
       }
+
       return;
     }
 
@@ -491,16 +501,16 @@ export default function Home() {
     }
 
     const payload = {
-      customer_name: customerName,
-      service_area: serviceArea,
-      root_result: rootResult,
-      tip_result: tipResult,
-      treatment_result: treatmentResult,
-      warning,
-      memo,
-      before_photo_url: beforePhotoUrl,
-      tip_photo_url: tipPhotoUrl,
-      after_photo_url: afterPhotoUrl,
+      customer_name: customerName.trim(),
+      service_area: serviceArea || "",
+      root_result: rootResult || "未選定",
+      tip_result: tipResult || "未選定",
+      treatment_result: treatmentResult || "未判定",
+      warning: warning || "",
+      memo: memo || "メモなし",
+      before_photo_url: beforePhotoUrl || "",
+      tip_photo_url: tipPhotoUrl || "",
+      after_photo_url: afterPhotoUrl || "",
     };
 
     let error;
@@ -528,10 +538,8 @@ export default function Home() {
 
     alert("症例をクラウド保存しました");
     window.location.reload();
-  }
-
-  async function deleteCase(id: number) {
-    const ok = window.confirm("削除しますか？");
+  }  async function deleteCase(id: number) {
+    const ok = window.confirm("この症例を削除しますか？");
     if (!ok) return;
 
     const { error } = await supabase
@@ -540,12 +548,23 @@ export default function Home() {
       .eq("id", id);
 
     if (error) {
-      alert("削除失敗");
+      console.error(error);
+      alert("削除に失敗しました");
       return;
     }
 
-    setCases((prev) => prev.filter((c) => c.id !== id));
-  }  if (!isLoggedIn) {
+    const updated = cases.filter(
+      (item) => item.id !== id
+    );
+
+    setCases(updated);
+
+    if (selectedCase?.id === id) {
+      setSelectedCase(null);
+    }
+  }
+
+  if (!isLoggedIn) {
     return (
       <main
         style={{
@@ -556,15 +575,15 @@ export default function Home() {
           backgroundColor: "#f5f7fb",
           padding: "20px",
         }}
-      >
-        <div
+      >        <div
           style={{
             width: "100%",
             maxWidth: "380px",
             backgroundColor: "#fff",
             borderRadius: "20px",
             padding: "24px",
-            boxShadow: "0 10px 30px rgba(15, 23, 42, 0.08)",
+            boxShadow:
+              "0 10px 30px rgba(15, 23, 42, 0.08)",
             border: "1px solid #e5e7eb",
           }}
         >
@@ -579,18 +598,30 @@ export default function Home() {
             nova
           </h1>
 
-          <p style={{ color: "#6b7280", marginBottom: "20px" }}>
+          <p
+            style={{
+              color: "#6b7280",
+              marginBottom: "20px",
+            }}
+          >
             MEN'S STRAIGHT PERM
           </p>
 
-          <h2 style={{ fontSize: "20px", marginBottom: "16px" }}>
+          <h2
+            style={{
+              fontSize: "20px",
+              marginBottom: "16px",
+            }}
+          >
             ログイン
           </h2>
 
           <input
             placeholder="ID"
             value={loginId}
-            onChange={(e) => setLoginId(e.target.value)}
+            onChange={(e) =>
+              setLoginId(e.target.value)
+            }
             style={{
               width: "100%",
               padding: "12px",
@@ -598,13 +629,13 @@ export default function Home() {
               borderRadius: "12px",
               border: "1px solid #ddd",
             }}
-          />
-
-          <input
+          />          <input
             type="password"
             placeholder="Password"
             value={loginPassword}
-            onChange={(e) => setLoginPassword(e.target.value)}
+            onChange={(e) =>
+              setLoginPassword(e.target.value)
+            }
             style={{
               width: "100%",
               padding: "12px",
@@ -615,7 +646,12 @@ export default function Home() {
           />
 
           {loginError && (
-            <p style={{ color: "red", marginBottom: "10px" }}>
+            <p
+              style={{
+                color: "red",
+                marginBottom: "10px",
+              }}
+            >
               {loginError}
             </p>
           )}
@@ -637,10 +673,11 @@ export default function Home() {
         </div>
       </main>
     );
-  }  return (
+  }
+
+  return (
     <main style={pageStyle}>
-      <div style={containerStyle}>
-        <div style={{ marginBottom: "24px", padding: "16px 4px" }}>
+      <div style={containerStyle}>        <div style={{ marginBottom: "24px", padding: "16px 4px" }}>
           <h1
             style={{
               fontSize: "32px",
@@ -678,8 +715,7 @@ export default function Home() {
         </div>
 
         <div style={{ marginBottom: "20px" }}>
-          <Link href="/cases">
-            <button
+          <Link href="/cases">            <button
               style={{
                 padding: "10px 16px",
                 marginRight: "10px",
@@ -711,27 +747,40 @@ export default function Home() {
         </div>        <section style={cardStyle}>
           <h2 style={sectionTitleStyle}>お客様情報</h2>
 
-          <input
-            value={customerName}
-            onChange={(e) => setCustomerName(e.target.value)}
-            placeholder="お客様名"
-            style={{
-              width: "100%",
-              padding: "12px",
-              borderRadius: "12px",
-              border: "1px solid #ddd",
-            }}
-          />
+          <div>
+            <p style={smallLabelStyle}>お客様名</p>
+            <input
+              type="text"
+              value={customerName}
+              onChange={(e) =>
+                setCustomerName(e.target.value)
+              }
+              placeholder="例: 山田太郎"
+              style={{
+                width: "100%",
+                padding: "12px",
+                borderRadius: "12px",
+                border: "1px solid #d1d5db",
+                fontSize: "16px",
+                boxSizing: "border-box",
+              }}
+            />
+          </div>
         </section>
 
         <section style={cardStyle}>
           <h2 style={sectionTitleStyle}>写真</h2>
 
-          <div style={{ marginBottom: "16px" }}>
-            <p style={smallLabelStyle}>施術前</p>
+          <div style={{ marginBottom: "18px" }}>
+            <p style={smallLabelStyle}>
+              施術前写真
+            </p>
             <input
               type="file"
-              onChange={(e) => handlePhotoChange(e, "before")}
+              accept="image/*"
+              onChange={(e) =>
+                handlePhotoChange(e, "before")
+              }
             />
 
             {beforePhotoUrl && (
@@ -740,13 +789,16 @@ export default function Home() {
                 style={photoPreviewStyle}
               />
             )}
-          </div>
-
-          <div style={{ marginBottom: "16px" }}>
-            <p style={smallLabelStyle}>毛先</p>
+          </div>          <div style={{ marginBottom: "18px" }}>
+            <p style={smallLabelStyle}>
+              毛先写真
+            </p>
             <input
               type="file"
-              onChange={(e) => handlePhotoChange(e, "tip")}
+              accept="image/*"
+              onChange={(e) =>
+                handlePhotoChange(e, "tip")
+              }
             />
 
             {tipPhotoUrl && (
@@ -758,10 +810,15 @@ export default function Home() {
           </div>
 
           <div>
-            <p style={smallLabelStyle}>仕上がり</p>
+            <p style={smallLabelStyle}>
+              仕上がり写真
+            </p>
             <input
               type="file"
-              onChange={(e) => handlePhotoChange(e, "after")}
+              accept="image/*"
+              onChange={(e) =>
+                handlePhotoChange(e, "after")
+              }
             />
 
             {afterPhotoUrl && (
@@ -771,7 +828,9 @@ export default function Home() {
               />
             )}
           </div>
-        </section>        <div
+        </section>
+
+        <div
           style={{
             position: "sticky",
             bottom: "16px",
@@ -803,7 +862,12 @@ export default function Home() {
             borderLeft: "6px solid #111827",
           }}
         >
-          <p style={{ fontSize: "13px", color: "#6b7280" }}>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#6b7280",
+            }}
+          >
             ROOT
           </p>
 
@@ -817,7 +881,12 @@ export default function Home() {
             根元の選定結果
           </h3>
 
-          <p style={{ fontSize: "22px", fontWeight: 800 }}>
+          <p
+            style={{
+              fontSize: "22px",
+              fontWeight: 800,
+            }}
+          >
             {rootResult || "まだ結果はありません"}
           </p>
 
@@ -840,7 +909,12 @@ export default function Home() {
             borderLeft: "6px solid #2563eb",
           }}
         >
-          <p style={{ fontSize: "13px", color: "#6b7280" }}>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#6b7280",
+            }}
+          >
             TIP
           </p>
 
@@ -854,7 +928,12 @@ export default function Home() {
             毛先の選定結果
           </h3>
 
-          <p style={{ fontSize: "22px", fontWeight: 800 }}>
+          <p
+            style={{
+              fontSize: "22px",
+              fontWeight: 800,
+            }}
+          >
             {tipResult || "まだ結果はありません"}
           </p>
         </section>
@@ -865,7 +944,12 @@ export default function Home() {
             borderLeft: "6px solid #16a34a",
           }}
         >
-          <p style={{ fontSize: "13px", color: "#6b7280" }}>
+          <p
+            style={{
+              fontSize: "13px",
+              color: "#6b7280",
+            }}
+          >
             TREATMENT
           </p>
 
@@ -886,7 +970,8 @@ export default function Home() {
               lineHeight: 1.7,
             }}
           >
-            {treatmentResult || "まだ判定していません"}
+            {treatmentResult ||
+              "まだ判定していません"}
           </p>
         </section>
 
